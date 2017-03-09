@@ -47,10 +47,19 @@ class Parser
 
             $connector = new RestClient;
             $connector->setCookies($this->authorizationCookies);
-            $connector->sendRequest($this->getBaseUrl() . "purchase/station/{$locationTitle}");
+            $connector->setGet(array(
+                'term' => $locationTitle
+            ));
+            $connector->sendRequest($this->getBaseUrl() . 'purchase/station/');
+
+            $httpCode = $connector->getResponseInfo()['http_code'];
             $response = (array)json_decode($connector->getResponseBody(), true);
 
-            foreach ($response['value'] as $stationData) {
+            if (empty($response)) {
+                throw new \Exception(printf('Unable to retrieve suggestions. HTTP code %s.', $httpCode));
+            }
+
+            foreach ($response as $stationData) {
                 $suggestions[] = $this->builder->constructStation($stationData);
             }
 

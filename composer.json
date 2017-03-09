@@ -1,7 +1,7 @@
 {
    "name": "raisaev/uz-tickets-parser",
    "description": "Railroad Tickets Parser [http://booking.uz.gov.ua/]",
-   "version": "1.0.0",
+   "version": "1.0.1",
    "homepage": "https://vk.com/raisaev",
    "require": {
        "php": ">=5.6.0"

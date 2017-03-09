@@ -35,14 +35,14 @@ class Client
         curl_setopt($curl, CURLOPT_SAFE_UPLOAD, false);
         curl_setopt($curl, CURLOPT_HEADER, true);
 
-        if (!empty($this->post)) {
+        if (!empty($this->getPost())) {
 
             curl_setopt($curl, CURLOPT_POST, true);
 
             if ($useMultiPartForm) {
 
                 $boundary    = $this->buildBoundary();
-                $rawPostData = $this->buildRawPostData($this->post, $boundary);
+                $rawPostData = $this->buildRawPostData($this->getPost(), $boundary);
                 curl_setopt($curl, CURLOPT_POSTFIELDS, $rawPostData);
 
                 $this->headers['Content-Type']   = 'multipart/form-data; boundary=' . $boundary;
@@ -54,8 +54,8 @@ class Client
             }
         }
 
-        if (!empty($getData)) {
-            $url .= '?' . http_build_query($getData);
+        if (!empty($this->getGet())) {
+            $url .= '?' . http_build_query($this->getGet());
         }
         curl_setopt($curl, CURLOPT_URL, $url);
 

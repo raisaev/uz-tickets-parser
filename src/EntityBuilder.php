@@ -12,8 +12,8 @@ class EntityBuilder
     /**
     Array
     (
-        [title] => Днепропетровск Главный
-        [station_id] => 2210700
+        [label] => Днепропетровск Главный
+        [value] => 2210700
     )
      * @param array $parsedData
      * @return Station
@@ -21,8 +21,8 @@ class EntityBuilder
     public function constructStation(array $parsedData)
     {
         $station = new Station(
-            $parsedData['title'],
-            $parsedData['station_id']
+            $parsedData['label'],
+            $parsedData['value']
         );
         return $station;
     }
@@ -71,11 +71,15 @@ class EntityBuilder
      */
     public function constructTrain(array $parsedData)
     {
-        $parsedData['from']['title'] = $parsedData['from']['station'];
-        $stationFrom = $this->constructStation($parsedData['from']);
+        $stationFrom = $this->constructStation(array(
+            'label' => $parsedData['from']['station'],
+            'value' => $parsedData['from']['station_id']
+        ));
 
-        $parsedData['till']['title'] = $parsedData['till']['station'];
-        $stationTo = $this->constructStation($parsedData['till']);
+        $stationTo = $this->constructStation(array(
+            'label' => $parsedData['till']['station'],
+            'value' => $parsedData['till']['station_id']
+        ));
 
         $seats = [];
         foreach ($parsedData['types'] as $seatData) {
