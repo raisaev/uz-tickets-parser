@@ -1,84 +1,96 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser;
+namespace Raisaev\UzTicketsParser;
 
-use RAIsaev\UzTicketsParser\Station;
-use RAIsaev\UzTicketsParser\Train;
+use Raisaev\UzTicketsParser\Station;
+use Raisaev\UzTicketsParser\Train;
 
 class EntityBuilder
 {
     //###################################
 
     /**
-    Array
-    (
-        [label] => Днепропетровск Главный
-        [value] => 2210700
-    )
+     * {
+     *    title: "Днепр-Лоцманская",
+     *    region: null,
+     *    value: 2210701
+     * }
      * @param array $parsedData
      * @return Station
      */
     public function constructStation(array $parsedData)
     {
         $station = new Station(
-            $parsedData['label'],
+            $parsedData['title'],
             $parsedData['value']
         );
         return $station;
     }
 
+    // ---------------------------------------
+
     /**
-    Array
-    (
-        [num] => 063П
-        [model] => 0
-        [category] => 0
-        [travel_time] => 11:18
-        [from] => Array
-        (
-            [station_id] => 2210700
-            [station] => Днепропетровск Главный
-            [date] => 1483549800
-            [src_date] => 2017-01-04 19:10:00
-        )
-
-        [till] => Array
-        (
-            [station_id] => 2208001
-            [station] => Одесса-Главная
-            [date] => 1483590480
-            [src_date] => 2017-01-05 06:28:00
-        )
-
-        [types] => Array
-        (
-            [0] => Array
-            (
-                [title] => Купе
-                [letter] => К
-                [places] => 14
-            )
-            [1] => Array
-            (
-                [title] => Плацкарт
-                [letter] => П
-                [places] => 210
-            )
-        )
-    )
+     {
+        "num": "004П",
+        "category": 0,
+        "isTransformer": 0,
+        "travelTime": "13:00",
+        "from": {
+            "code": "2210700",
+            "station": "Днепр-Главный",
+            "stationTrain": "Запорожье 1",
+            "date": "понедельник, 24.12.2018",
+            "time": "16:40",
+            "sortTime": 1545662400,
+            "srcDate": "2018-12-24"
+        },
+        "to": {
+            "code": "2218000",
+            "station": "Львов",
+            "stationTrain": "Ужгород",
+            "date": "вторник, 25.12.2018",
+            "time": "05:40",
+            "sortTime": 1545709200
+        },
+        "types": [{
+            "id": "К",
+            "title": "Купе",
+            "letter": "К",
+            "places": 89
+        }],
+        "child": {
+            "minDate": "2004-12-25",
+            "maxDate": "2018-12-21"
+        },
+        "allowStudent": 1,
+        "allowBooking": 1,
+        "isCis": 0,
+        "isEurope": 0,
+        "allowPrivilege": 0
+    }
      * @param array $parsedData
      * @return Train
      */
     public function constructTrain(array $parsedData)
     {
-        $stationFrom = $this->constructStation(array(
-            'label' => $parsedData['from']['station'],
-            'value' => $parsedData['from']['station_id']
+        $from = $this->constructStation(array(
+            'title' => $parsedData['from']['station'],
+            'value' => $parsedData['from']['code']
         ));
 
-        $stationTo = $this->constructStation(array(
-            'label' => $parsedData['till']['station'],
-            'value' => $parsedData['till']['station_id']
+        $fromStation = $this->constructStation(array(
+            'title' => $parsedData['from']['stationTrain'],
+            'value' => NULL
+        ));
+
+        $to = $this->constructStation(array(
+            'title' => $parsedData['to']['station'],
+            'value' => $parsedData['to']['code']
+        ));
+
+        $toStation = $this->constructStation(array(
+            'title' => $parsedData['to']['stationTrain'],
+            'value' => NULL
         ));
 
         $seats = [];
@@ -86,24 +98,26 @@ class EntityBuilder
             $seats[] = $this->constructSeat($seatData);
         }
 
+        $fromDate = trim(explode(',', $parsedData['from']['date'])[1]) .' '. $parsedData['from']['time'];
+        $toDate   = trim(explode(',', $parsedData['to']['date'])[1])   .' '. $parsedData['to']['time'];
+
         $train = new Train(
-            $parsedData['num'],
-            $stationFrom,
-            $stationTo,
-            new \DateTime($parsedData['from']['src_date']),
-            new \DateTime($parsedData['till']['src_date']),
+            $from, $to, $parsedData['num'], $fromStation, $toStation,
+            new \DateTime($fromDate, new \DateTimeZone('Europe/Kiev')),
+            new \DateTime($toDate, new \DateTimeZone('Europe/Kiev')),
             $seats
         );
+
         return $train;
     }
 
     /**
-    Array
-    (
-        [title] => Купе
-        [letter] => К
-        [places] => 14
-    )
+    {
+        "id": "К",
+        "title": "Купе",
+        "letter": "К",
+        "places": 89
+    }
      * @param array $parsedData
      * @return Train\Seat
      */
@@ -118,44 +132,41 @@ class EntityBuilder
     }
 
     /**
-    Array
-    (
-        [num] => 5
-        [type] => К
-        [allow_bonus] =>
-        [places_cnt] => 1
-        [has_bedding] => 1
-        [reserve_price] => 1700
-        [services] => Array
-        (
-            [0] => Ч
-            [1] => Ш
-        )
-        [prices] => Array
-        (
-            [Б] => 16494
-        )
-        [coach_type_id] => 3
-        [scheme_id] => 3
-        [coach_class] => Д
-    )
+    {
+    "num": 14,
+        "type_id": "П",
+        "type": "П",
+        "class": "Г",
+        "railway": 45,
+        "free": 1,
+        "byWishes": false,
+        "hasBedding": true,
+        "obligatoryBedding": false,
+        "services": ["М",
+        "Н"],
+        "prices": {
+            "Б": 15140
+        },
+        "reservePrice": 1700,
+        "allowBonus": false,
+        "air": null
+    }
      * @param string $trainNumber
      * @param array $parsedData
      * @return Train\Coach
      */
-    public function constructCoach($trainNumber, array $parsedData)
+    public function constructCoach(array $parsedData)
     {
         $price = array_shift($parsedData['prices']);
         $price = round($price / 100, 2);
 
         $coach = new Train\Coach(
-            $trainNumber,
+            $parsedData['train_number'],
             $parsedData['num'],
-            $parsedData['coach_type_id'],
-            $parsedData['coach_class'],
+            $parsedData['type'],
+            $parsedData['class'],
             $price,
-            $parsedData['places_cnt'],
-            $parsedData['has_bedding']
+            $parsedData['free']
         );
         return $coach;
     }

@@ -1,10 +1,10 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser\Filter;
+namespace Raisaev\UzTicketsParser\Filter;
 
-use RAIsaev\UzTicketsParser\Train;
+use Raisaev\UzTicketsParser\Train;
 
-class SeatsCount extends AbstractModel
+class SeatsCount implements FilterInterface
 {
     protected $seatType;
     protected $seatCount;
@@ -24,7 +24,7 @@ class SeatsCount extends AbstractModel
         return 'Seats';
     }
 
-    public function filter(array &$trains)
+    public function apply(array &$trains)
     {
         foreach ($trains as $key => $train) {
             /** @var Train $train */
@@ -47,19 +47,9 @@ class SeatsCount extends AbstractModel
 
     // ########################################
 
-    public function setSeatType($type)
-    {
-        $this->seatType = $type;
-    }
-
     public function getSeatType()
     {
         return $this->seatType;
-    }
-
-    public function setSeatCount($count)
-    {
-        $this->seatCount = (int)$count;
     }
 
     public function getSeatCount()

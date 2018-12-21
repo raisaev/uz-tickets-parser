@@ -1,6 +1,6 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser\Train;
+namespace Raisaev\UzTicketsParser\Train;
 
 class Seat
 {
@@ -15,10 +15,10 @@ class Seat
 
     //###################################
 
-    public function __construct($code, $title, $places = 0)
+    public function __construct($code, $title, $places)
     {
-        $this->code = $code;
-        $this->title = $title;
+        $this->code   = $code;
+        $this->title  = $title;
         $this->places = $places;
     }
 

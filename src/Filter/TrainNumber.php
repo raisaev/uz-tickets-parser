@@ -1,10 +1,10 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser\Filter;
+namespace Raisaev\UzTicketsParser\Filter;
 
-use RAIsaev\UzTicketsParser\Train;
+use Raisaev\UzTicketsParser\Train;
 
-class TrainNumber extends AbstractModel
+class TrainNumber implements FilterInterface
 {
     protected $trainNumbers = [];
 
@@ -22,7 +22,7 @@ class TrainNumber extends AbstractModel
         return 'Train Number';
     }
 
-    public function filter(array &$trains)
+    public function apply(array &$trains)
     {
         foreach ($trains as $key => $train) {
             /** @var Train $train */
@@ -34,11 +34,6 @@ class TrainNumber extends AbstractModel
     }
 
     // ########################################
-
-    public function setTrainNumbers(array $trainNumbers)
-    {
-        $this->trainNumbers = $trainNumbers;
-    }
 
     public function getTrainNumbers()
     {

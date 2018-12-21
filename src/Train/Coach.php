@@ -1,6 +1,6 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser\Train;
+namespace Raisaev\UzTicketsParser\Train;
 
 class Coach
 {
@@ -12,18 +12,11 @@ class Coach
     protected $class;
     protected $price;
     protected $places;
-    protected $includesBedding = false;
 
     //###################################
 
     public function __construct(
-        $trainNumber,
-        $number,
-        $type,
-        $class,
-        $price,
-        $places,
-        $includesBedding
+        $trainNumber, $number, $type, $class, $price, $places
     ){
         $this->trainNumber = $trainNumber;
         $this->number = $number;
@@ -31,7 +24,6 @@ class Coach
         $this->class = $class;
         $this->price = $price;
         $this->places = $places;
-        $this->includesBedding = $includesBedding;
     }
 
     //###################################
@@ -56,11 +48,6 @@ class Coach
         return $this->class;
     }
 
-    public function isIncludesBedding()
-    {
-        return $this->includesBedding;
-    }
-
     public function getPrice()
     {
         return $this->price;
@@ -69,33 +56,6 @@ class Coach
     public function getPlaces()
     {
         return $this->places;
-    }
-
-    //###################################
-
-    public function getTitle()
-    {
-        switch ($this->type) {
-            case Seat::TYPE_BERTH:
-                return 'Berth';
-                break;
-
-            case Seat::TYPE_COUPE:
-                return 'Coupe';
-                break;
-
-            case Seat::TYPE_VIP:
-                return 'Vip';
-                break;
-
-            case Seat::TYPE_COMMON:
-                return 'Common';
-                break;
-
-            default:
-                return 'Unknown';
-                break;
-        }
     }
 
     //###################################

@@ -1,23 +1,33 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser;
+namespace Raisaev\UzTicketsParser;
 
 class Train
 {
+    /** @var Station */
+    protected $from;
+
+    /** @var Station */
+    protected $to;
+
+    // ---------------------------------------
+
     /** @var string */
     protected $number;
 
     /** @var Station */
     protected $stationFrom;
 
+    /** @var  \DateTime */
+    protected $stationFromDate;
+
     /** @var Station */
     protected $stationTo;
 
     /** @var  \DateTime */
-    protected $stationFromDate;
-
-    /** @var  \DateTime */
     protected $stationToDate;
+
+    // ---------------------------------------
 
     /** @var  \DateInterval */
     protected $tripTime;
@@ -28,13 +38,13 @@ class Train
     //###################################
 
     public function __construct(
-        $number,
-        Station $stationFrom,
-        Station $stationTo,
-        \DateTime $stationFromDate,
-        \DateTime $stationToDate,
+        Station $from, Station $to,
+        $number, Station $stationFrom, Station $stationTo,
+        \DateTime $stationFromDate, \DateTime $stationToDate,
         array $seats
     ){
+        $this->from = $from;
+        $this->to = $to;
         $this->number = $number;
         $this->stationFrom = $stationFrom;
         $this->stationTo = $stationTo;
@@ -55,6 +65,16 @@ class Train
     public function getTripTime()
     {
         return $this->tripTime;
+    }
+
+    public function getFrom()
+    {
+        return $this->from;
+    }
+
+    public function getTo()
+    {
+        return $this->to;
     }
 
     public function getStationFrom()

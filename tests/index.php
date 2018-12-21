@@ -1,39 +1,29 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-use RAIsaev\UzTicketsParser\Parser;
 
-$parser = new Parser();
-//$suggestionsFrom = $parser->getStationsSuggestions('Днепропетровск'); // 2210700
-//$suggestionsTo   = $parser->getStationsSuggestions('Львов');          // 2218000
-//$suggestionsTo   = $parser->getStationsSuggestions('Тернополь');      // 2218300
+$parser = new \Raisaev\UzTicketsParser\Parser();
+$suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный');
+$suggestionsTo   = $parser->getStationsSuggestions('Белая Церковь');
 
-//$from = reset($suggestionsFrom);
-//$to   = reset($suggestionsTo);
-$date = new \DateTime('11.03.2017 00:00', new \DateTimeZone('UTC'));
-
+$date = new \DateTime('16.01.2019', new \DateTimeZone('Europe/Kiev'));
 $trains = $parser->getTrains(
-    '2210700', //$from->getCode(),
-    '2218300', //$to->getCode(),
-    $date
+    $suggestionsFrom[0], $suggestionsTo[0], $date
 );
 
-if (!empty($parser->getErrorMessages())) {
-    echo implode('\r\n', $parser->getErrorMessages());
-}
-
-if (empty($trains)) {
-    return;
-}
-
-$train = reset($trains);
 var_dump(
-    $train
+    $trains[0]->getNumber(),
+    $trains[0]->getStationFromDate('H:i'),
+    $trains[0]->getStationToDate('H:i'),
+    $trains[0]->getTripTime()->h
 );
 
-//$coaches = $parser->getCoaches(
-//    $train->getStationFrom()->getCode(), $train->getStationTo()->getCode(),
-//    $train->getNumber(), \RAIsaev\UzTicketsParser\Train\Seat::TYPE_COUPE, $date
-//);
+$coaches = $parser->getCoaches(
+    $suggestionsFrom[0], $suggestionsTo[0],
+    $trains[0]->getNumber(), \Raisaev\UzTicketsParser\Train\Seat::TYPE_BERTH, $date
+);
 
+var_dump(
+    $coaches
+);
 die;

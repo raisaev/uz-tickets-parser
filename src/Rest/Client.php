@@ -1,6 +1,6 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser\Rest;
+namespace Raisaev\UzTicketsParser\Rest;
 
 class Client
 {
@@ -23,16 +23,18 @@ class Client
 
     // ########################################
 
-    public function sendRequest($url,
-                                $requestType = self::REQUEST_TYPE_GET,
-                                $useMultiPartForm = false)
-    {
+    public function sendRequest(
+        $url,
+        $requestType = self::REQUEST_TYPE_GET,
+        $useMultiPartForm = false
+    ){
         $curl = curl_init();
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true );
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_VERBOSE, true);
-        curl_setopt($curl, CURLOPT_SAFE_UPLOAD, false);
         curl_setopt($curl, CURLOPT_HEADER, true);
 
         if (!empty($this->getPost())) {
@@ -83,6 +85,7 @@ class Client
         $rawHeader = substr($curlResponse, 0, $headerSize);
         $this->responseHeaders = $this->parseResponseHeaders($rawHeader);
         $this->responseCookies = $this->parseResponseCookies($rawHeader);
+
         $this->validateLastResponse($curl);
 
         curl_close($curl);
@@ -93,17 +96,16 @@ class Client
 
     protected function validateLastResponse($curl)
     {
-        if ($this->responseBody === false) {
-
-            $curlError = curl_error($curl);
-            throw new \Exception("An connection error occurred. {$curlError}.");
+        if (empty($this->responseBody)) {
+            throw new \Exception(sprintf(
+                'An connection error occurred. %s.', curl_error($curl)
+            ));
         }
 
-        if (!empty($this->responseInfo['http_code']) &&
-            in_array((int)$this->responseInfo['http_code'], [500, 400])) {
-
-            $httpCode = $this->responseInfo['http_code'];
-            throw new \Exception("An error occurred. HTTP Code: {$httpCode}");
+        if (!empty($this->responseInfo['http_code']) && in_array((int)$this->responseInfo['http_code'], [500, 400])) {
+            throw new \Exception(sprintf(
+                'An error occurred. HTTP Code: %s.', $this->responseInfo['http_code']
+            ));
         }
     }
 
@@ -174,9 +176,8 @@ class Client
 
         $preparedBody[] = '--' .$boundary. '--';
         $preparedBody[] = '';
-        $content = join("\r\n", $preparedBody);
 
-        return $content;
+        return implode("\r\n", $preparedBody);
     }
 
     protected function buildBoundary()

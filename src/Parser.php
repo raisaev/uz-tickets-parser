@@ -1,35 +1,44 @@
 <?php
 
-namespace RAIsaev\UzTicketsParser;
+namespace Raisaev\UzTicketsParser;
 
-use RAIsaev\UzTicketsParser\Rest\Client as RestClient;
-use JJDecode\JJDecode;
+use Raisaev\UzTicketsParser\Rest\Client as RestClient;
 
 class Parser
 {
     //###################################
 
-    const FRONTEND_URL = 'http://booking.uz.gov.ua/';
+    const FRONTEND_URL = 'https://booking.uz.gov.ua/';
 
-    const LOCALE_RU = 'ru';
-    const LOCALE_EN = 'en';
-    const LOCALE_UA = 'ua';
+    const RU_LOC = 'ru';
+    const EN_LOC = 'en';
+    const UA_LOC = 'ua';
 
-    protected $params = [];
-    protected $errorMessages = [];
-
-    private $authorizationCookies = [];
-    private $authorizationToken   = null;
+    private $locale;
 
     /** @var EntityBuilder */
     private $builder;
 
+    private $authorizationCookies = [];
+    private $errorMessages = [];
+
     //###################################
 
-    public function __construct()
+    public function __construct($locale = self::RU_LOC)
     {
+        $this->locale  = $locale;
         $this->builder = new EntityBuilder();
+
         $this->initCookiesAndToken();
+    }
+
+    // ---------------------------------------
+
+    private function initCookiesAndToken()
+    {
+        $connector = new RestClient;
+        $connector->sendRequest($this->getBaseUrl());
+        $this->authorizationCookies = $connector->getResponseCookies();
     }
 
     //###################################
@@ -50,15 +59,9 @@ class Parser
             $connector->setGet(array(
                 'term' => $locationTitle
             ));
-            $connector->sendRequest($this->getBaseUrl() . 'purchase/station/');
+            $connector->sendRequest($this->getBaseUrl() . 'train_search/station/');
 
-            $httpCode = $connector->getResponseInfo()['http_code'];
             $response = (array)json_decode($connector->getResponseBody(), true);
-
-            if (empty($response)) {
-                throw new \Exception(printf('Unable to retrieve suggestions. HTTP code %s.', $httpCode));
-            }
-
             foreach ($response as $stationData) {
                 $suggestions[] = $this->builder->constructStation($stationData);
             }
@@ -71,13 +74,14 @@ class Parser
     }
 
     /**
-     * @param $stationFromCode string
-     * @param $stationToCode string
+     * @param $stationFrom Station
+     * @param $stationTo Station
      * @param $date \DateTime
-     * @param $filters Filter\AbstractModel[]
+     * @param $filters Filter\FilterInterface[]
+     *
      * @return Train[]
      */
-    public function getTrains($stationFromCode, $stationToCode, \DateTime $date, $filters = [])
+    public function getTrains(Station $stationFrom, Station $stationTo, \DateTime $date, $filters = [])
     {
         $trains = [];
 
@@ -85,9 +89,9 @@ class Parser
 
             $this->clearErrorMessages();
 
-            $trains = $this->searchTrains($stationFromCode, $stationToCode, $date);
+            $trains = $this->searchTrains($stationFrom, $stationTo, $date);
             foreach ($filters as $filter) {
-                $filter->filter($trains);
+                $filter->apply($trains);
             }
 
         } catch (\Exception $e) {
@@ -98,14 +102,15 @@ class Parser
     }
 
     /**
-     * @param $stationFromCode string
-     * @param $stationToCode string
+     * @param $stationFrom Station
+     * @param $stationTo Station
      * @param $trainNumber string
      * @param $seatCode string
      * @param $date \DateTime
+     *
      * @return Train\Coach[]
      */
-    public function getCoaches($stationFromCode, $stationToCode, $trainNumber, $seatCode, \DateTime $date)
+    public function getCoaches(Station $stationFrom, Station $stationTo, $trainNumber, $seatCode, \DateTime $date)
     {
         $coaches = [];
 
@@ -113,7 +118,7 @@ class Parser
 
             $this->clearErrorMessages();
 
-            $coaches = $this->searchCoaches($stationFromCode, $stationToCode, $trainNumber, $seatCode, $date);
+            $coaches = $this->searchCoaches($stationFrom, $stationTo, $trainNumber, $seatCode, $date);
 
         } catch (\Exception $e) {
             $this->errorMessages[] = $e->getMessage();
@@ -124,107 +129,68 @@ class Parser
 
     //###################################
 
-    private function initCookiesAndToken()
-    {
-        if (!empty($this->authorizationCookies) && $this->authorizationToken) {
-            return;
-        }
-
-        $connector = new RestClient;
-        $connector->sendRequest($this->getBaseUrl());
-        $this->authorizationCookies = $connector->getResponseCookies();
-
-        $decoder = new JJDecode();
-        $decodedResponse = $decoder->Decode($connector->getResponseBody());
-
-        preg_match('/"gv-token"(.)*?"((.)*?)"/', $decodedResponse, $matches);
-        if (empty($matches[2])) {
-            throw new \Exception('Unable to parse GV-Token');
-        }
-
-        $this->authorizationToken = $matches[2];
-    }
-
-    //###################################
     /**
-     * @param $stationFromCode string
-     * @param $stationToCode string
+     * @param $stationFrom Station
+     * @param $stationTo Station
      * @param $date \DateTime
+     *
      * @return Train[]
-     * @throws \Exception
      */
-    protected function searchTrains($stationFromCode, $stationToCode, \DateTime $date)
+    protected function searchTrains(Station $stationFrom, Station $stationTo, \DateTime $date)
     {
         $connector = new RestClient;
-        $connector->setHeaders(array(
-            'GV-Ajax'    => '1',
-            'GV-Referer' => $this->getBaseUrl(),
-            'GV-Token'   => $this->authorizationToken,
-        ));
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
-            'station_id_from' => $stationFromCode,
-            'station_id_till' => $stationToCode,
-            'date_dep'        => $date->format('d.m.Y'),
-            'time_dep'        => '00:00',
-            'time_dep_till'   => '',
-            'another_ec'      => '0',
-            'search'          => ''
+            'from' => $stationFrom->getCode(),
+            'to'   => $stationTo->getCode(),
+            'date' => $date->format('Y-m-d'),
+            'time' => '00:00',
         ));
 
-        $connector->sendRequest($this->getBaseUrl() . 'purchase/search/');
+        $connector->sendRequest($this->getBaseUrl() . '/train_search/');
         $response = (array)json_decode($connector->getResponseBody(), true);
 
-        if (isset($response['error']) && $response['error']) {
-            throw new \Exception($response['value']);
-        }
-
         $trains = [];
-        foreach ($response['value'] as $trainData) {
-            $trains[] = $this->builder->constructTrain($trainData);
+        if (!empty($response['data']['list'])) {
+            foreach ($response['data']['list'] as $trainData) {
+                $trains[] = $this->builder->constructTrain($trainData);
+            }
         }
 
         return $trains;
     }
 
-    //###################################
-
     /**
-     * @param $stationFromCode string
-     * @param $stationToCode string
+     * @param $stationFrom Station
+     * @param $stationTo Station
      * @param string $trainNumber
      * @param string $seatCode
      * @param $date \DateTime
+     *
      * @return Train\Coach[]
-     * @throws \Exception
      */
-    protected function searchCoaches($stationFromCode, $stationToCode, $trainNumber, $seatCode, \DateTime $date)
+    protected function searchCoaches(Station $stationFrom, Station $stationTo, $trainNumber, $seatCode, \DateTime $date)
     {
         $connector = new RestClient;
-        $connector->setHeaders(array(
-            'GV-Ajax'    => '1',
-            'GV-Referer' => $this->getBaseUrl(),
-            'GV-Token'   => $this->authorizationToken,
-        ));
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
-            'station_id_from' => $stationFromCode,
-            'station_id_till' => $stationToCode,
-            'train'           => $trainNumber,
-            'coach_type'      => $seatCode,
-            'date_dep'        => $date->getTimestamp(),
+            'from'          => $stationFrom->getCode(),
+            'to'            => $stationTo->getCode(),
+            'train'         => $trainNumber,
+            'wagon_type_id' => $seatCode,
+            'date'          => $date->format('Y-m-d'),
         ));
 
-        $connector->sendRequest($this->getBaseUrl().'purchase/coaches/');
+        $connector->sendRequest($this->getBaseUrl() .'train_wagons');
         $response = (array)json_decode($connector->getResponseBody(), true);
 
-        if (isset($response['error']) && $response['error']) {
-            throw new \Exception($response['value']);
-        }
-
         $coaches = [];
-        foreach ($response['coaches'] as $coachData) {
-            $coaches[] = $this->builder->constructCoach($trainNumber, $coachData);
+
+        if (!empty($response['data']['wagons'])) {
+            foreach ($response['data']['wagons'] as $coachData) {
+                $coachData['train_number'] = $trainNumber;
+                $coaches[] = $this->builder->constructCoach($coachData);
+            }
         }
 
         return $coaches;
@@ -232,29 +198,12 @@ class Parser
 
     //###################################
 
-    private function getLocale()
-    {
-        $locale = isset($this->params['locale']) ? $this->params['locale'] : self::LOCALE_RU;
-
-        if (!in_array($locale, [self::LOCALE_EN, self::LOCALE_RU, self::LOCALE_UA])) {
-            throw new \Exception("Invalid locale provided [{$locale}]");
-        }
-        return $locale;
-    }
-
     private function getBaseUrl()
     {
-        return self::FRONTEND_URL.$this->getLocale().'/';
+        return self::FRONTEND_URL . $this->locale . '/';
     }
 
     //###################################
-
-    public function setParams(array $params = array())
-    {
-        return $this->params = $params;
-    }
-
-    //-------------------------------------
 
     public function getErrorMessages()
     {
