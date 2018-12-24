@@ -1,4 +1,2 @@
 .idea/*
-composer.phar
-vendor/autoload.php
-vendor/composer/*
+/vendor/*
