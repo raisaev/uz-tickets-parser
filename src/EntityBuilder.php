@@ -73,7 +73,7 @@ class EntityBuilder
      */
     public function constructTrain(array $parsedData)
     {
-        $from = $this->constructStation([
+        $fromStation = $this->constructStation([
             'title' => $parsedData['from']['station'],
             'value' => $parsedData['from']['code']
         ]);
@@ -83,7 +83,7 @@ class EntityBuilder
             'value' => NULL
         ]);
 
-        $to = $this->constructStation([
+        $toStation = $this->constructStation([
             'title' => $parsedData['to']['station'],
             'value' => $parsedData['to']['code']
         ]);
@@ -104,10 +104,10 @@ class EntityBuilder
         $train = new Train(
             $parsedData['num'],
             $formationFromStation,
-            $from,
+            $fromStation,
             new \DateTime($fromDate, new \DateTimeZone('Europe/Kiev')),
             $formationToStation,
-            $to,
+            $toStation,
             new \DateTime($toDate, new \DateTimeZone('Europe/Kiev')),
             $seats
         );

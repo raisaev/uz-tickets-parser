@@ -39,21 +39,20 @@ class Client
 
         if (!empty($this->getPost())) {
 
-            curl_setopt($curl, CURLOPT_POST, true);
-
             if ($useMultiPartForm) {
 
                 $boundary    = $this->buildBoundary();
                 $rawPostData = $this->buildRawPostData($this->getPost(), $boundary);
-                curl_setopt($curl, CURLOPT_POSTFIELDS, $rawPostData);
 
                 $this->headers['Content-Type']   = 'multipart/form-data; boundary=' . $boundary;
                 $this->headers['Content-Length'] = strlen($rawPostData);
                 $this->headers['Expect']         = '100-continue';
             } else {
-
-                curl_setopt($curl, CURLOPT_POSTFIELDS, $this->post);
+                $rawPostData = $this->post;
             }
+
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $rawPostData);
         }
 
         if (!empty($this->getGet())) {
@@ -159,7 +158,8 @@ class Client
             if (strpos($value, '@') === 0) {
 
                 preg_match('/^@(.*?)$/', $value, $matches);
-                list($dummy, $filename) = $matches;
+                $filename = $matches[1];
+
                 $preparedBody[] = '--' . $boundary;
                 $preparedBody[] = 'Content-Disposition: form-data; name="' .$key. '"; filename="' .basename($filename). '"';
                 $preparedBody[] = 'Content-Type: application/octet-stream';
