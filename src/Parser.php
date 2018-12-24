@@ -147,7 +147,7 @@ class Parser
             'time' => '00:00',
         ));
 
-        $connector->sendRequest($this->getBaseUrl() . '/train_search/');
+        $connector->sendRequest($this->getBaseUrl() . 'train_search/');
         $response = (array)json_decode($connector->getResponseBody(), true);
 
         $trains = [];
@@ -181,7 +181,7 @@ class Parser
             'date'          => $date->format('Y-m-d'),
         ));
 
-        $connector->sendRequest($this->getBaseUrl() .'train_wagons');
+        $connector->sendRequest($this->getBaseUrl() .'train_wagons/');
         $response = (array)json_decode($connector->getResponseBody(), true);
 
         $coaches = [];

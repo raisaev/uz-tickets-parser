@@ -15,7 +15,8 @@ var_dump(
     $trains[0]->getNumber(),
     $trains[0]->getStationFromDate('H:i'),
     $trains[0]->getStationToDate('H:i'),
-    $trains[0]->getTripTime()->h
+    $trains[0]->getTripTime('%H:%I'),
+    $trains[0]->getSeats()
 );
 
 $coaches = $parser->getCoaches(

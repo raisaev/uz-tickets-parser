@@ -4,16 +4,11 @@ namespace Raisaev\UzTicketsParser;
 
 class Train
 {
-    /** @var Station */
-    protected $from;
-
-    /** @var Station */
-    protected $to;
-
-    // ---------------------------------------
-
     /** @var string */
     protected $number;
+
+    /** @var Station */
+    protected $stationFormationFrom;
 
     /** @var Station */
     protected $stationFrom;
@@ -22,33 +17,38 @@ class Train
     protected $stationFromDate;
 
     /** @var Station */
+    protected $stationFormationTo;
+
+    /** @var Station */
     protected $stationTo;
 
     /** @var  \DateTime */
     protected $stationToDate;
 
-    // ---------------------------------------
+    /** @var Train\Seat[] */
+    protected $seats = [];
 
     /** @var  \DateInterval */
     protected $tripTime;
 
-    /** @var Train\Seat[] */
-    protected $seats = [];
-
     //###################################
 
     public function __construct(
-        Station $from, Station $to,
-        $number, Station $stationFrom, Station $stationTo,
-        \DateTime $stationFromDate, \DateTime $stationToDate,
+        $number,
+        Station $stationFormationFrom,
+        Station $stationFrom,
+        \DateTime $stationFromDate,
+        Station $stationFormationTo,
+        Station $stationTo,
+        \DateTime $stationToDate,
         array $seats
     ){
-        $this->from = $from;
-        $this->to = $to;
         $this->number = $number;
+        $this->stationFormationFrom = $stationFormationFrom;
         $this->stationFrom = $stationFrom;
-        $this->stationTo = $stationTo;
         $this->stationFromDate = $stationFromDate;
+        $this->stationFormationTo = $stationFormationTo;
+        $this->stationTo = $stationTo;
         $this->stationToDate = $stationToDate;
         $this->seats = $seats;
 
@@ -62,19 +62,9 @@ class Train
         return $this->number;
     }
 
-    public function getTripTime()
+    public function getStationFormationFrom()
     {
-        return $this->tripTime;
-    }
-
-    public function getFrom()
-    {
-        return $this->from;
-    }
-
-    public function getTo()
-    {
-        return $this->to;
+        return $this->stationFormationFrom;
     }
 
     public function getStationFrom()
@@ -82,14 +72,9 @@ class Train
         return $this->stationFrom;
     }
 
-    public function getStationTo()
+    public function getStationFormationTo()
     {
-        return $this->stationTo;
-    }
-
-    public function getSeats()
-    {
-        return $this->seats;
+        return $this->stationFormationTo;
     }
 
     public function getStationFromDate($format = null)
@@ -100,12 +85,30 @@ class Train
         return $this->stationFromDate;
     }
 
+    public function getStationTo()
+    {
+        return $this->stationTo;
+    }
+
     public function getStationToDate($format = null)
     {
         if (!is_null($format)) {
             return $this->stationToDate->format($format);
         }
         return $this->stationToDate;
+    }
+
+    public function getSeats()
+    {
+        return $this->seats;
+    }
+
+    public function getTripTime($format = null)
+    {
+        if (!is_null($format)) {
+            return $this->tripTime->format($format);
+        }
+        return $this->tripTime;
     }
 
     //###################################

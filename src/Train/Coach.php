@@ -11,19 +11,27 @@ class Coach
     protected $type;
     protected $class;
     protected $price;
-    protected $places;
+
+    /** @var \Raisaev\UzTicketsParser\Train\Seat[] */
+    protected $seats = [];
 
     //###################################
 
     public function __construct(
-        $trainNumber, $number, $type, $class, $price, $places
+        $trainNumber,
+        $number,
+        $type,
+        $class,
+        $price,
+        array $seats
     ){
         $this->trainNumber = $trainNumber;
         $this->number = $number;
         $this->type = $type;
         $this->class = $class;
         $this->price = $price;
-        $this->places = $places;
+
+        $this->seats = $seats;
     }
 
     //###################################
@@ -53,9 +61,9 @@ class Coach
         return $this->price;
     }
 
-    public function getPlaces()
+    public function getSeats()
     {
-        return $this->places;
+        return $this->seats;
     }
 
     //###################################

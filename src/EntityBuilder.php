@@ -73,25 +73,25 @@ class EntityBuilder
      */
     public function constructTrain(array $parsedData)
     {
-        $from = $this->constructStation(array(
+        $from = $this->constructStation([
             'title' => $parsedData['from']['station'],
             'value' => $parsedData['from']['code']
-        ));
+        ]);
 
-        $fromStation = $this->constructStation(array(
+        $formationFromStation = $this->constructStation([
             'title' => $parsedData['from']['stationTrain'],
             'value' => NULL
-        ));
+        ]);
 
-        $to = $this->constructStation(array(
+        $to = $this->constructStation([
             'title' => $parsedData['to']['station'],
             'value' => $parsedData['to']['code']
-        ));
+        ]);
 
-        $toStation = $this->constructStation(array(
+        $formationToStation = $this->constructStation([
             'title' => $parsedData['to']['stationTrain'],
             'value' => NULL
-        ));
+        ]);
 
         $seats = [];
         foreach ($parsedData['types'] as $seatData) {
@@ -102,8 +102,12 @@ class EntityBuilder
         $toDate   = trim(explode(',', $parsedData['to']['date'])[1])   .' '. $parsedData['to']['time'];
 
         $train = new Train(
-            $from, $to, $parsedData['num'], $fromStation, $toStation,
+            $parsedData['num'],
+            $formationFromStation,
+            $from,
             new \DateTime($fromDate, new \DateTimeZone('Europe/Kiev')),
+            $formationToStation,
+            $to,
             new \DateTime($toDate, new \DateTimeZone('Europe/Kiev')),
             $seats
         );
@@ -160,13 +164,19 @@ class EntityBuilder
         $price = array_shift($parsedData['prices']);
         $price = round($price / 100, 2);
 
+        $seat = $this->constructSeat([
+             'letter' => $parsedData['type'],
+             'title'  => '',//todo
+             'places' => $parsedData['free'],
+        ]);
+
         $coach = new Train\Coach(
             $parsedData['train_number'],
             $parsedData['num'],
             $parsedData['type'],
             $parsedData['class'],
             $price,
-            $parsedData['free']
+            array($seat)
         );
         return $coach;
     }
