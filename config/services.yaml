@@ -1,0 +1,11 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: false
+
+  Raisaev\UzTicketsParser\:
+    resource: '../src/*'
+    exclude: '../src/{Entity,Filter}'
+
+  Raisaev\UzTicketsParser\Rest\Client:
+    shared: false

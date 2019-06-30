@@ -2,8 +2,8 @@
 
 namespace Raisaev\UzTicketsParser;
 
-use Raisaev\UzTicketsParser\Station;
-use Raisaev\UzTicketsParser\Train;
+use Raisaev\UzTicketsParser\Entity\Station;
+use Raisaev\UzTicketsParser\Entity\Train;
 
 class EntityBuilder
 {

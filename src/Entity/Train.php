@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser;
+namespace Raisaev\UzTicketsParser\Entity;
 
 class Train
 {
@@ -13,7 +13,7 @@ class Train
     /** @var Station */
     protected $stationFrom;
 
-    /** @var  \DateTime */
+    /** @var \DateTime */
     protected $stationFromDate;
 
     /** @var Station */
@@ -22,13 +22,13 @@ class Train
     /** @var Station */
     protected $stationTo;
 
-    /** @var  \DateTime */
+    /** @var \DateTime */
     protected $stationToDate;
 
     /** @var Train\Seat[] */
     protected $seats = [];
 
-    /** @var  \DateInterval */
+    /** @var \DateInterval */
     protected $tripTime;
 
     //###################################

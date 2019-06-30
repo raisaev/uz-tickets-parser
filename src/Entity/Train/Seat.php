@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser\Train;
+namespace Raisaev\UzTicketsParser\Entity\Train;
 
 class Seat
 {

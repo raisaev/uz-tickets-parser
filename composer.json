@@ -4,7 +4,10 @@
    "version": "1.0.2",
    "homepage": "https://www.facebook.com/profile.php?id=100005280694830",
    "require": {
-       "php": ">=5.6.0"
+      "php": ">=5.6.0",
+      "symfony/dependency-injection": "^3.4",
+      "symfony/config": "^3.4",
+      "symfony/yaml": "^3.4"
    },
    "autoload": {
        "psr-4": {

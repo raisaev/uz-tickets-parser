@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser\Train;
+namespace Raisaev\UzTicketsParser\Entity\Train;
 
 class Coach
 {
@@ -12,7 +12,7 @@ class Coach
     protected $class;
     protected $price;
 
-    /** @var \Raisaev\UzTicketsParser\Train\Seat[] */
+    /** @var Seat[] */
     protected $seats = [];
 
     //###################################

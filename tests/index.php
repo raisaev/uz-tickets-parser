@@ -1,12 +1,23 @@
 <?php
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$parser = new \Raisaev\UzTicketsParser\Parser();
-$suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный');
-$suggestionsTo   = $parser->getStationsSuggestions('Белая Церковь');
+$containerBuilder = new ContainerBuilder();
+$loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/../config'));
+$loader->load('services.yaml');
+$containerBuilder->compile();
 
-$date = new \DateTime('16.01.2019', new \DateTimeZone('Europe/Kiev'));
+/** @var \Raisaev\UzTicketsParser\Parser $parser */
+$parser = $containerBuilder->get(\Raisaev\UzTicketsParser\Parser::class);
+
+$suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный');
+$suggestionsTo   = $parser->getStationsSuggestions('Киев');
+
+$date = new \DateTime('30.06.2019', new \DateTimeZone('Europe/Kiev'));
 $trains = $parser->getTrains(
     $suggestionsFrom[0], $suggestionsTo[0], $date
 );
@@ -21,7 +32,7 @@ var_dump(
 
 $coaches = $parser->getCoaches(
     $suggestionsFrom[0], $suggestionsTo[0],
-    $trains[0]->getNumber(), \Raisaev\UzTicketsParser\Train\Seat::TYPE_BERTH, $date
+    $trains[0]->getNumber(), \Raisaev\UzTicketsParser\Entity\Train\Seat::TYPE_BERTH, $date
 );
 
 var_dump(

@@ -2,7 +2,7 @@
 
 namespace Raisaev\UzTicketsParser\Filter;
 
-use Raisaev\UzTicketsParser\Train;
+use Raisaev\UzTicketsParser\Entity\Train;
 
 class TrainNumber implements FilterInterface
 {

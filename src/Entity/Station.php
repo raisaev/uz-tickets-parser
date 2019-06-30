@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser;
+namespace Raisaev\UzTicketsParser\Entity;
 
 class Station
 {

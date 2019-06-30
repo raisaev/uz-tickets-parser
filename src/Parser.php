@@ -3,6 +3,7 @@
 namespace Raisaev\UzTicketsParser;
 
 use Raisaev\UzTicketsParser\Rest\Client as RestClient;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class Parser
 {
@@ -14,20 +15,28 @@ class Parser
     const EN_LOC = 'en';
     const UA_LOC = 'ua';
 
+    /** @var string */
     private $locale;
 
     /** @var EntityBuilder */
     private $builder;
+
+    /** @var ContainerInterface */
+    private $di;
 
     private $authorizationCookies = [];
     private $errorMessages = [];
 
     //###################################
 
-    public function __construct($locale = self::RU_LOC)
-    {
+    public function __construct(
+        EntityBuilder $builder,
+        ContainerInterface $di,
+        $locale = self::RU_LOC
+    ){
         $this->locale  = $locale;
-        $this->builder = new EntityBuilder();
+        $this->builder = $builder;
+        $this->di      = $di;
 
         $this->initCookiesAndToken();
     }
@@ -36,7 +45,7 @@ class Parser
 
     private function initCookiesAndToken()
     {
-        $connector = new RestClient;
+        $connector = $this->di->get(RestClient::class);
         $connector->sendRequest($this->getBaseUrl());
         $this->authorizationCookies = $connector->getResponseCookies();
     }
@@ -44,7 +53,7 @@ class Parser
     //###################################
     /**
      * @param $locationTitle
-     * @return Station[]
+     * @return Entity\Station[]
      */
     public function getStationsSuggestions($locationTitle)
     {
@@ -54,7 +63,7 @@ class Parser
 
             $this->clearErrorMessages();
 
-            $connector = new RestClient;
+            $connector = $this->di->get(RestClient::class);
             $connector->setCookies($this->authorizationCookies);
             $connector->setGet(array(
                 'term' => $locationTitle
@@ -74,15 +83,19 @@ class Parser
     }
 
     /**
-     * @param $stationFrom Station
-     * @param $stationTo Station
+     * @param $stationFrom Entity\Station
+     * @param $stationTo Entity\Station
      * @param $date \DateTime
      * @param $filters Filter\FilterInterface[]
      *
-     * @return Train[]
+     * @return Entity\Train[]
      */
-    public function getTrains(Station $stationFrom, Station $stationTo, \DateTime $date, $filters = [])
-    {
+    public function getTrains(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        \DateTime $date,
+        $filters = []
+    ){
         $trains = [];
 
         try {
@@ -102,16 +115,20 @@ class Parser
     }
 
     /**
-     * @param $stationFrom Station
-     * @param $stationTo Station
+     * @param $stationFrom Entity\Station
+     * @param $stationTo Entity\Station
      * @param $trainNumber string
      * @param $seatCode string
      * @param $date \DateTime
      *
-     * @return Train\Coach[]
+     * @return Entity\Train\Coach[]
      */
-    public function getCoaches(Station $stationFrom, Station $stationTo, $trainNumber, $seatCode, \DateTime $date)
-    {
+    public function getCoaches(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        $trainNumber, $seatCode,
+        \DateTime $date
+    ){
         $coaches = [];
 
         try {
@@ -130,15 +147,18 @@ class Parser
     //###################################
 
     /**
-     * @param $stationFrom Station
-     * @param $stationTo Station
+     * @param $stationFrom Entity\Station
+     * @param $stationTo Entity\Station
      * @param $date \DateTime
      *
-     * @return Train[]
+     * @return Entity\Train[]
      */
-    protected function searchTrains(Station $stationFrom, Station $stationTo, \DateTime $date)
-    {
-        $connector = new RestClient;
+    protected function searchTrains(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        \DateTime $date
+    ){
+        $connector = $this->di->get(RestClient::class);
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
             'from' => $stationFrom->getCode(),
@@ -161,17 +181,22 @@ class Parser
     }
 
     /**
-     * @param $stationFrom Station
-     * @param $stationTo Station
+     * @param $stationFrom Entity\Station
+     * @param $stationTo Entity\Station
      * @param string $trainNumber
      * @param string $seatCode
      * @param $date \DateTime
      *
-     * @return Train\Coach[]
+     * @return Entity\Train\Coach[]
      */
-    protected function searchCoaches(Station $stationFrom, Station $stationTo, $trainNumber, $seatCode, \DateTime $date)
-    {
-        $connector = new RestClient;
+    protected function searchCoaches(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        $trainNumber,
+        $seatCode,
+        \DateTime $date
+    ){
+        $connector = $this->di->get(RestClient::class);
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
             'from'          => $stationFrom->getCode(),
