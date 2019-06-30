@@ -54,18 +54,20 @@ class Parser
             $connector = $this->di->get(RestClient::class);
             $connector->sendRequest($this->getBaseUrl() . 'train_search/');
 
-            $cookies->set($connector->getResponseCookies());
+            $cookies->set(json_encode($connector->getResponseCookies()));
             $cookies->expiresAfter(60 * 60);
 
             $this->cache->save($cookies);
         }
 
-        $this->authorizationCookies = $cookies->get();
+        $this->authorizationCookies = json_decode($cookies->get(), true);
     }
 
     private function resetCookiesAndToken()
     {
-        $this->cache->deleteItem('request-cookies');
+        $cookies = $this->cache->getItem('request-cookies');
+        $cookies->set(null);
+        $this->cache->save($cookies);
     }
 
     //###################################
@@ -219,6 +221,10 @@ class Parser
             throw new Exception\ParsingException('Unable to parse data. Captcha required.');
         }
 
+        if (!empty($response['error']) && !empty($response['data'])) {
+            throw new Exception\ParsingException("Unable to parse data. {$response['data']}");
+        }
+
         $trains = [];
         if (!empty($response['data']['list'])) {
             foreach ($response['data']['list'] as $trainData) {
@@ -260,6 +266,10 @@ class Parser
 
         if (!empty($response['captcha'])) {
             throw new Exception\ParsingException('Unable to parse data. Captcha required.');
+        }
+
+        if (!empty($response['error']) && !empty($response['data'])) {
+            throw new Exception\ParsingException("Unable to parse data. {$response['data']}");
         }
 
         $coaches = [];

@@ -17,7 +17,7 @@ $parser = $containerBuilder->get(\Raisaev\UzTicketsParser\Parser::class);
 $suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный')[0];
 $suggestionsTo   = $parser->getStationsSuggestions('Киев')[0];
 
-$date = new \DateTime('30.06.2019', new \DateTimeZone('Europe/Kiev'));
+$date = new \DateTime('01.07.2019', new \DateTimeZone('Europe/Kiev'));
 $trains = $parser->getTrains($suggestionsFrom, $suggestionsTo, $date);
 
 var_dump($parser->getCombinedErrorMessage());
