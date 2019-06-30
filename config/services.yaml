@@ -9,3 +9,7 @@ services:
 
   Raisaev\UzTicketsParser\Rest\Client:
     shared: false
+
+  Symfony\Component\Cache\Adapter\FilesystemAdapter:
+    arguments:
+      $directory: '../var/cache/'

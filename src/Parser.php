@@ -24,6 +24,9 @@ class Parser
     /** @var ContainerInterface */
     private $di;
 
+    /** @var \Symfony\Component\Cache\Adapter\FilesystemAdapter */
+    private $cache;
+
     private $authorizationCookies = [];
     private $errorMessages = [];
 
@@ -32,54 +35,67 @@ class Parser
     public function __construct(
         EntityBuilder $builder,
         ContainerInterface $di,
+        \Symfony\Component\Cache\Adapter\FilesystemAdapter $cache,
         $locale = self::RU_LOC
     ){
         $this->locale  = $locale;
         $this->builder = $builder;
         $this->di      = $di;
-
-        $this->initCookiesAndToken();
+        $this->cache   = $cache;
     }
 
     // ---------------------------------------
 
     private function initCookiesAndToken()
     {
-        $connector = $this->di->get(RestClient::class);
-        $connector->sendRequest($this->getBaseUrl());
-        $this->authorizationCookies = $connector->getResponseCookies();
+        $cookies = $this->cache->getItem('request-cookies');
+        if (!$cookies->isHit()) {
+
+            $connector = $this->di->get(RestClient::class);
+            $connector->sendRequest($this->getBaseUrl() . 'train_search/');
+
+            $cookies->set($connector->getResponseCookies());
+            $cookies->expiresAfter(60 * 60);
+
+            $this->cache->save($cookies);
+        }
+
+        $this->authorizationCookies = $cookies->get();
+    }
+
+    private function resetCookiesAndToken()
+    {
+        $this->cache->deleteItem('request-cookies');
     }
 
     //###################################
+
     /**
      * @param $locationTitle
      * @return Entity\Station[]
      */
     public function getStationsSuggestions($locationTitle)
     {
-        $suggestions = [];
-
         try {
 
             $this->clearErrorMessages();
 
-            $connector = $this->di->get(RestClient::class);
-            $connector->setCookies($this->authorizationCookies);
-            $connector->setGet(array(
-                'term' => $locationTitle
-            ));
-            $connector->sendRequest($this->getBaseUrl() . 'train_search/station/');
+            $suggestions = $this->cache->getItem("stations-suggestions-{$locationTitle}");
+            if (!$suggestions->isHit()) {
 
-            $response = (array)json_decode($connector->getResponseBody(), true);
-            foreach ($response as $stationData) {
-                $suggestions[] = $this->builder->constructStation($stationData);
+                $suggestions->set($this->searchStationsSuggestions($locationTitle));
+                $suggestions->expiresAfter(60 * 60);
+
+                $this->cache->save($suggestions);
             }
 
-        } catch (\Exception $e) {
-            $this->errorMessages[] = $e->getMessage();
-        }
+            return $suggestions->get();
 
-        return $suggestions;
+        } catch (\Exception $e) {
+
+            $this->errorMessages[] = $e->getMessage();
+            return [];
+        }
     }
 
     /**
@@ -96,10 +112,9 @@ class Parser
         \DateTime $date,
         $filters = []
     ){
-        $trains = [];
-
         try {
 
+            $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
             $trains = $this->searchTrains($stationFrom, $stationTo, $date);
@@ -107,11 +122,15 @@ class Parser
                 $filter->apply($trains);
             }
 
-        } catch (\Exception $e) {
-            $this->errorMessages[] = $e->getMessage();
-        }
+            return $trains;
 
-        return $trains;
+        } catch (\Exception $e) {
+
+            $this->resetCookiesAndToken();
+            $this->errorMessages[] = $e->getMessage();
+
+            return [];
+        }
     }
 
     /**
@@ -129,22 +148,48 @@ class Parser
         $trainNumber, $seatCode,
         \DateTime $date
     ){
-        $coaches = [];
-
         try {
 
+            $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
             $coaches = $this->searchCoaches($stationFrom, $stationTo, $trainNumber, $seatCode, $date);
+            return $coaches;
 
         } catch (\Exception $e) {
-            $this->errorMessages[] = $e->getMessage();
-        }
 
-        return $coaches;
+            $this->resetCookiesAndToken();
+            $this->errorMessages[] = $e->getMessage();
+
+            return [];
+        }
     }
 
     //###################################
+
+    /**
+     * @param $locationTitle
+     * @return Entity\Station[]
+     */
+    public function searchStationsSuggestions($locationTitle)
+    {
+        $connector = $this->di->get(RestClient::class);
+        $connector->setCookies($this->authorizationCookies);
+        $connector->setGet(array(
+            'term' => $locationTitle
+        ));
+
+        $connector->sendRequest($this->getBaseUrl() . 'train_search/station/');
+        $response = (array)json_decode($connector->getResponseBody(), true);
+
+        $suggestions = [];
+
+        foreach ($response as $stationData) {
+            $suggestions[] = $this->builder->constructStation($stationData);
+        }
+
+        return $suggestions;
+    }
 
     /**
      * @param $stationFrom Entity\Station
@@ -169,6 +214,10 @@ class Parser
 
         $connector->sendRequest($this->getBaseUrl() . 'train_search/');
         $response = (array)json_decode($connector->getResponseBody(), true);
+
+        if (!empty($response['captcha'])) {
+            throw new Exception\ParsingException('Unable to parse data. Captcha required.');
+        }
 
         $trains = [];
         if (!empty($response['data']['list'])) {
@@ -208,6 +257,10 @@ class Parser
 
         $connector->sendRequest($this->getBaseUrl() .'train_wagons/');
         $response = (array)json_decode($connector->getResponseBody(), true);
+
+        if (!empty($response['captcha'])) {
+            throw new Exception\ParsingException('Unable to parse data. Captcha required.');
+        }
 
         $coaches = [];
 

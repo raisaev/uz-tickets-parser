@@ -14,28 +14,32 @@ $containerBuilder->compile();
 /** @var \Raisaev\UzTicketsParser\Parser $parser */
 $parser = $containerBuilder->get(\Raisaev\UzTicketsParser\Parser::class);
 
-$suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный');
-$suggestionsTo   = $parser->getStationsSuggestions('Киев');
+$suggestionsFrom = $parser->getStationsSuggestions('Днепр-Главный')[0];
+$suggestionsTo   = $parser->getStationsSuggestions('Киев')[0];
 
 $date = new \DateTime('30.06.2019', new \DateTimeZone('Europe/Kiev'));
-$trains = $parser->getTrains(
-    $suggestionsFrom[0], $suggestionsTo[0], $date
-);
+$trains = $parser->getTrains($suggestionsFrom, $suggestionsTo, $date);
 
-var_dump(
-    $trains[0]->getNumber(),
-    $trains[0]->getStationFromDate('H:i'),
-    $trains[0]->getStationToDate('H:i'),
-    $trains[0]->getTripTime('%H:%I'),
-    $trains[0]->getSeats()
-);
+var_dump($parser->getCombinedErrorMessage());
 
-$coaches = $parser->getCoaches(
-    $suggestionsFrom[0], $suggestionsTo[0],
-    $trains[0]->getNumber(), \Raisaev\UzTicketsParser\Entity\Train\Seat::TYPE_BERTH, $date
-);
+$train = reset($trains);
+if (!empty($train)) {
 
-var_dump(
-    $coaches
-);
+    var_dump(
+        $train->getNumber(),
+        $train->getStationFromDate('H:i'),
+        $train->getStationToDate('H:i'),
+        $train->getTripTime('%H:%I'),
+        $train->getSeats()
+    );
+
+    $coaches = $parser->getCoaches(
+        $suggestionsFrom, $suggestionsTo,
+        $train->getNumber(), \Raisaev\UzTicketsParser\Entity\Train\Seat::TYPE_BERTH, $date
+    );
+
+    var_dump($parser->getCombinedErrorMessage());
+    var_dump($coaches);
+}
+
 die;
