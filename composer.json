@@ -8,7 +8,8 @@
       "symfony/dependency-injection": "^3.4",
       "symfony/config": "^3.4",
       "symfony/yaml": "^3.4",
-      "symfony/cache": "^3.4"
+      "symfony/cache": "^3.4",
+      "symfony/console": "^3.4"
    },
    "autoload": {
        "psr-4": {

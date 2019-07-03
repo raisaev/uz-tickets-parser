@@ -11,6 +11,8 @@ class Parser
 
     const FRONTEND_URL = 'https://booking.uz.gov.ua/';
 
+    const REQUEST_COOKIES_STORAGE_KEY = 'request-cookies';
+
     const RU_LOC = 'ru';
     const EN_LOC = 'en';
     const UA_LOC = 'ua';
@@ -48,26 +50,24 @@ class Parser
 
     private function initCookiesAndToken()
     {
-        $cookies = $this->cache->getItem('request-cookies');
+        $cookies = $this->cache->getItem(self::REQUEST_COOKIES_STORAGE_KEY);
         if (!$cookies->isHit()) {
 
             $connector = $this->di->get(RestClient::class);
             $connector->sendRequest($this->getBaseUrl() . 'train_search/');
 
-            $cookies->set(json_encode($connector->getResponseCookies()));
-            $cookies->expiresAfter(60 * 60);
+            $cookies->set($connector->getResponseCookies());
+            $cookies->expiresAfter(60 * 60 * 24);
 
             $this->cache->save($cookies);
         }
 
-        $this->authorizationCookies = json_decode($cookies->get(), true);
+        $this->authorizationCookies = $cookies->get();
     }
 
     private function resetCookiesAndToken()
     {
-        $cookies = $this->cache->getItem('request-cookies');
-        $cookies->set(null);
-        $this->cache->save($cookies);
+        $this->cache->deleteItem(self::REQUEST_COOKIES_STORAGE_KEY);
     }
 
     //###################################

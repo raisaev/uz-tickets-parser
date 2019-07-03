@@ -12,4 +12,4 @@ services:
 
   Symfony\Component\Cache\Adapter\FilesystemAdapter:
     arguments:
-      $directory: '../var/cache/'
+      $directory: 'var/cache/'
