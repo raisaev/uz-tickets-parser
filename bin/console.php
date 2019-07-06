@@ -22,6 +22,7 @@ $commandLoader = new ContainerCommandLoader($containerBuilder, array(
 
     Command\ParserSuggestStation::getDefaultName() => Command\ParserSuggestStation::class,
     Command\ParserSearchTrains::getDefaultName()   => Command\ParserSearchTrains::class,
+    Command\ParserSearchCoaches::getDefaultName()  => Command\ParserSearchCoaches::class,
 ));
 
 $application = new Application('Booking.uz.gov.ua Parser Console');

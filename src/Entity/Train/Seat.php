@@ -4,10 +4,12 @@ namespace Raisaev\UzTicketsParser\Entity\Train;
 
 class Seat
 {
-    const TYPE_VIP    = 'Л';
-    const TYPE_COUPE  = 'К';
-    const TYPE_BERTH  = 'П';
-    const TYPE_COMMON = 'О';
+    //todo locales
+    const TYPE_VIP     = 'Л';
+    const TYPE_COUPE   = 'К';
+    const TYPE_BERTH   = 'П';
+    const TYPE_COMMON  = 'О';
+    const TYPE_SITTING = 'С';
 
     protected $code;
     protected $title;

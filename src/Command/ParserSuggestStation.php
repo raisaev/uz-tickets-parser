@@ -40,7 +40,7 @@ class ParserSuggestStation extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $suggestions = [];
-        foreach ($this->parser->searchStationsSuggestions($input->getArgument('title')) as $suggestion) {
+        foreach ($this->parser->getStationsSuggestions($input->getArgument('title')) as $suggestion) {
             $suggestions[] = [$suggestion->getCode(), $suggestion->getTitle()];
         }
 

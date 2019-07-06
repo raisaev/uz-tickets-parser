@@ -12,8 +12,8 @@ class Coach
     protected $class;
     protected $price;
 
-    /** @var Seat[] */
-    protected $seats = [];
+    protected $freeSeats;
+    protected $freeSeatsNumbers = array();
 
     //###################################
 
@@ -23,15 +23,16 @@ class Coach
         $type,
         $class,
         $price,
-        array $seats
+        $freeSeats,
+        $freeSeatsNumbers = array()
     ){
         $this->trainNumber = $trainNumber;
         $this->number = $number;
         $this->type = $type;
         $this->class = $class;
         $this->price = $price;
-
-        $this->seats = $seats;
+        $this->freeSeats = $freeSeats;
+        $this->freeSeatsNumbers = $freeSeatsNumbers;
     }
 
     //###################################
@@ -61,9 +62,21 @@ class Coach
         return $this->price;
     }
 
-    public function getSeats()
+    public function getFreeSeats()
     {
-        return $this->seats;
+        return $this->freeSeats;
+    }
+
+    // ---------------------------------------
+
+    public function setFreeSeatsNumbers($value)
+    {
+        $this->freeSeatsNumbers = $value;
+    }
+
+    public function getFreeSeatsNumbers()
+    {
+        return $this->freeSeatsNumbers;
     }
 
     //###################################

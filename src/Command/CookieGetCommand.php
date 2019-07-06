@@ -3,9 +3,9 @@
 namespace Raisaev\UzTicketsParser\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Raisaev\UzTicketsParser\Parser;
 
 class CookieGetCommand extends Command
@@ -34,7 +34,14 @@ class CookieGetCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $io = new SymfonyStyle($input, $output);
+
         $cookies = $this->cache->getItem(Parser::REQUEST_COOKIES_STORAGE_KEY);
+        if (empty($cookies->get())) {
+
+            $io->error('No cookies');
+            return;
+        }
 
         $rawValue = [];
         foreach ($cookies->get() as $key => $value) {
@@ -42,7 +49,7 @@ class CookieGetCommand extends Command
         }
         $rawValue = implode('; ', $rawValue);
 
-        $output->writeln($rawValue);
+        $io->writeln($rawValue);
     }
 
     //########################################

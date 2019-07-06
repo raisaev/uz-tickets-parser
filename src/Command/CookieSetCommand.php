@@ -49,7 +49,7 @@ class CookieSetCommand extends Command
 
         $cookies = $this->cache->getItem(Parser::REQUEST_COOKIES_STORAGE_KEY);
         $cookies->set($cookieValue);
-        $cookies->expiresAfter($input->hasArgument('lifetime') ? (int)$input->getArgument('lifetime') : (60 * 60 * 24));
+        $cookies->expiresAfter($input->getArgument('lifetime') ? (int)$input->getArgument('lifetime') : (60 * 60 * 24));
 
         $this->cache->save($cookies);
 

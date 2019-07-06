@@ -159,24 +159,15 @@ class EntityBuilder
      * @param array $parsedData
      * @return Train\Coach
      */
-    public function constructCoach(array $parsedData)
+    public function constructCoach($trainNumber, array $parsedData)
     {
-        $price = array_shift($parsedData['prices']);
-        $price = round($price / 100, 2);
-
-        $seat = $this->constructSeat([
-             'letter' => $parsedData['type'],
-             'title'  => '',//todo
-             'places' => $parsedData['free'],
-        ]);
-
         $coach = new Train\Coach(
-            $parsedData['train_number'],
+            $trainNumber,
             $parsedData['num'],
             $parsedData['type'],
             $parsedData['class'],
-            $price,
-            array($seat)
+            round(array_shift($parsedData['prices']) / 100, 2),
+            $parsedData['free']
         );
         return $coach;
     }
