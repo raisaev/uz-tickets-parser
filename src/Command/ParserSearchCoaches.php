@@ -33,7 +33,7 @@ class ParserSearchCoaches extends Command
 
     protected function configure()
     {
-        $coachesTypes = implode(' | ', $this->parser->getSeatCodeByType());
+        $coachesTypes = implode(' | ', array_keys($this->parser->getSeatCodeByType()));
 
         $this
             ->setDefinition([
