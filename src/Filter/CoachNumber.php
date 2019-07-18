@@ -4,34 +4,33 @@ namespace Raisaev\UzTicketsParser\Filter;
 
 use Raisaev\UzTicketsParser\Entity\Train;
 
-class TrainNumber implements FilterInterface
+class CoachNumber implements FilterInterface
 {
-    protected $trainNumbers = [];
+    protected $coachNumbers = [];
 
     // ########################################
 
-    public function __construct(array $trainNumbers = [])
+    public function __construct(array $coachNumbers = [])
     {
-        $this->trainNumbers = $trainNumbers;
+        $this->coachNumbers = $coachNumbers;
     }
 
     // ########################################
 
     public function getLabel()
     {
-        return 'Train Number';
+        return 'Coach Number';
     }
 
     public function apply(array &$entities)
     {
-        if (empty($this->trainNumbers)) {
+        if (empty($this->coachNumbers)) {
             return;
         }
 
-        foreach ($entities as $key => $train) {
-            /** @var Train $train */
-
-            if (!in_array($train->getNumber(), $this->trainNumbers, true)) {
+        foreach ($entities as $key => $coach) {
+            /** @var Train\Coach $coach */
+            if (!in_array($coach->getNumber(), $this->coachNumbers, true)) {
                 unset($entities[$key]);
             }
         }
@@ -39,9 +38,9 @@ class TrainNumber implements FilterInterface
 
     // ########################################
 
-    public function getTrainNumbers()
+    public function getCoachNumbers()
     {
-        return $this->trainNumbers;
+        return $this->coachNumbers;
     }
 
     // ########################################

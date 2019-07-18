@@ -11,9 +11,9 @@ interface FilterInterface
     public function getLabel();
 
     /**
-     * @param Train[] $trains
+     * @param $entities
      */
-    public function apply(array &$trains);
+    public function apply(array &$entities);
 
     // ########################################
 }

@@ -3,6 +3,7 @@
 namespace Raisaev\UzTicketsParser;
 
 use Raisaev\UzTicketsParser\Rest\Client as RestClient;
+use Raisaev\UzTicketsParser\Entity\Train\Seat;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class Parser
@@ -28,6 +29,16 @@ class Parser
 
     /** @var \Symfony\Component\Cache\Adapter\FilesystemAdapter */
     private $cache;
+
+    private $seatTypesMap = [
+        self::RU_LOC => [
+            Seat::TYPE_VIP     => 'Л',
+            Seat::TYPE_COUPE   => 'К',
+            Seat::TYPE_BERTH   => 'П',
+            Seat::TYPE_COMMON  => 'О',
+            Seat::TYPE_SITTING => 'С',
+        ]
+    ];
 
     private $authorizationCookies = [];
     private $errorMessages = [];
@@ -184,6 +195,7 @@ class Parser
      * @param $trainNumber string
      * @param $seatCode string
      * @param $date \DateTime
+     * @param $filters Filter\FilterInterface[]
      *
      * @return Entity\Train\Coach[]
      */
@@ -192,7 +204,8 @@ class Parser
         Entity\Station $stationTo,
         $trainNumber,
         $seatCode,
-        \DateTime $date
+        \DateTime $date,
+        $filters = []
     ){
         try {
 
@@ -200,6 +213,10 @@ class Parser
             $this->clearErrorMessages();
 
             $coaches = $this->searchCoaches($stationFrom, $stationTo, $trainNumber, $seatCode, $date);
+            foreach ($filters as $filter) {
+                $filter->apply($trains);
+            }
+
             return $coaches;
 
         } catch (\Exception $e) {
@@ -222,7 +239,7 @@ class Parser
             'from'          => $stationFrom->getCode(),
             'to'            => $stationTo->getCode(),
             'train'         => $trainNumber,
-            'wagon_type_id' => $seatCode,
+            'wagon_type_id' => $this->getSeatCodeByType($seatCode),
             'date'          => $date->format('Y-m-d'),
             'get_tpl'       => '0'
         ));
@@ -318,6 +335,17 @@ class Parser
     public function getCombinedErrorMessage()
     {
         return implode('. ', $this->errorMessages);
+    }
+
+    //###################################
+
+    public function getSeatCodeByType($type = null)
+    {
+        if (null === $type) {
+            return $this->seatTypesMap[$this->locale];
+        }
+
+        return $this->seatTypesMap[$this->locale][$type];
     }
 
     //###################################
