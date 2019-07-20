@@ -6,16 +6,18 @@ class Passenger
 {
     protected $firstName;
     protected $lastName;
+    protected $email;
 
     protected $isStudent = false;
     protected $isChild = false;
 
     //###################################
 
-    public function __construct($firstName, $lastName, $isStudent = false, $isChild = false)
+    public function __construct($firstName, $lastName, $email, $isStudent = false, $isChild = false)
     {
         $this->firstName = $firstName;
         $this->lastName  = $lastName;
+        $this->email     = $email;
         $this->isStudent = $isStudent;
         $this->isChild   = $isChild;
     }
@@ -30,6 +32,11 @@ class Passenger
     public function getLastName()
     {
         return $this->lastName;
+    }
+
+    public function getEmail()
+    {
+        return $this->email;
     }
 
     public function getIsStudent()

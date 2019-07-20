@@ -16,13 +16,17 @@ $loader->load('services.yaml');
 $containerBuilder->compile();
 
 $commandLoader = new ContainerCommandLoader($containerBuilder, array(
-    Command\CookieSetCommand::getDefaultName()   => Command\CookieSetCommand::class,
-    Command\CookieResetCommand::getDefaultName() => Command\CookieResetCommand::class,
-    Command\CookieGetCommand::getDefaultName()   => Command\CookieGetCommand::class,
+    Command\Cookie\SetCommand::getDefaultName()   => Command\Cookie\SetCommand::class,
+    Command\Cookie\ResetCommand::getDefaultName() => Command\Cookie\ResetCommand::class,
+    Command\Cookie\GetCommand::getDefaultName()   => Command\Cookie\GetCommand::class,
 
-    Command\ParserSuggestStation::getDefaultName() => Command\ParserSuggestStation::class,
-    Command\ParserSearchTrains::getDefaultName()   => Command\ParserSearchTrains::class,
-    Command\ParserSearchCoaches::getDefaultName()  => Command\ParserSearchCoaches::class,
+    Command\Passenger\AddCommand::getDefaultName()    => Command\Passenger\AddCommand::class,
+    Command\Passenger\RemoveCommand::getDefaultName() => Command\Passenger\RemoveCommand::class,
+    Command\Passenger\GetCommand::getDefaultName()    => Command\Passenger\GetCommand::class,
+
+    Command\Parser\SuggestStation::getDefaultName() => Command\Parser\SuggestStation::class,
+    Command\Parser\SearchTrains::getDefaultName()   => Command\Parser\SearchTrains::class,
+    Command\Parser\SearchCoaches::getDefaultName()  => Command\Parser\SearchCoaches::class,
 ));
 
 $application = new Application('Booking.uz.gov.ua Parser Console');

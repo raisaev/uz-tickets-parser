@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser\Command;
+namespace Raisaev\UzTicketsParser\Command\Parser;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Raisaev\UzTicketsParser\Parser;
 
-class ParserSuggestStation extends Command
+class SuggestStation extends Command
 {
     protected static $defaultName = 'parser:suggest-station';
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Raisaev\UzTicketsParser\Command;
+namespace Raisaev\UzTicketsParser\Command\Cookie;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Raisaev\UzTicketsParser\Parser;
 
-class CookieResetCommand extends Command
+class ResetCommand extends Command
 {
     protected static $defaultName = 'cookie:reset';
 
