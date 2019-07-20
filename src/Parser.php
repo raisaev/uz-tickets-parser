@@ -83,7 +83,7 @@ class Parser
             if (!$suggestions->isHit()) {
 
                 $suggestions->set($this->searchStationsSuggestions($locationTitle));
-                $suggestions->expiresAfter(60 * 60);
+                $suggestions->expiresAfter(60 * 60 * 24);
 
                 $this->cache->save($suggestions);
             }
@@ -138,7 +138,9 @@ class Parser
             $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
-            $trains = $this->searchTrains($stationFrom, $stationTo, $date);
+            $trains = $this->searchTrains(
+                $stationFrom->getCode(), $stationTo->getCode(), $date
+            );
             foreach ($filters as $filter) {
                 $filter->apply($trains);
             }
@@ -153,15 +155,15 @@ class Parser
     }
 
     protected function searchTrains(
-        Entity\Station $stationFrom,
-        Entity\Station $stationTo,
+        $stationFrom,
+        $stationTo,
         \DateTime $date
     ){
         $connector = $this->di->get(RestClient::class);
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
-            'from' => $stationFrom->getCode(),
-            'to'   => $stationTo->getCode(),
+            'from' => $stationFrom,
+            'to'   => $stationTo,
             'date' => $date->format('Y-m-d'),
             'time' => '00:00',
         ));
@@ -212,7 +214,9 @@ class Parser
             $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
-            $coaches = $this->searchCoaches($stationFrom, $stationTo, $trainNumber, $seatCode, $date);
+            $coaches = $this->searchCoaches(
+                $stationFrom->getCode(), $stationTo->getCode(), $trainNumber, $seatCode, $date
+            );
             foreach ($filters as $filter) {
                 $filter->apply($trains);
             }
@@ -227,8 +231,8 @@ class Parser
     }
 
     protected function searchCoaches(
-        Entity\Station $stationFrom,
-        Entity\Station $stationTo,
+        $stationFrom,
+        $stationTo,
         $trainNumber,
         $seatCode,
         \DateTime $date
@@ -236,8 +240,8 @@ class Parser
         $connector = $this->di->get(RestClient::class);
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
-            'from'          => $stationFrom->getCode(),
-            'to'            => $stationTo->getCode(),
+            'from'          => $stationFrom,
+            'to'            => $stationTo,
             'train'         => $trainNumber,
             'wagon_type_id' => $this->getSeatCodeByType($seatCode),
             'date'          => $date->format('Y-m-d'),
@@ -262,9 +266,9 @@ class Parser
 
                 $coach = $this->builder->constructCoach($trainNumber, $coachData);
                 $coach->setFreeSeatsNumbers($this->searchSeats(
-                    $stationFrom,
-                    $stationTo,
-                    $trainNumber,
+                    $stationFrom->getCode(),
+                    $stationTo->getCode(),
+                    $coach->getTrainNumber(),
                     $coach->getNumber(),
                     $coach->getType(),
                     $coach->getClass(),
@@ -279,8 +283,8 @@ class Parser
     }
 
     protected function searchSeats(
-        Entity\Station $stationFrom,
-        Entity\Station $stationTo,
+        $stationFrom,
+        $stationTo,
         $trainNumber,
         $coachNumber,
         $coachType,
@@ -290,8 +294,8 @@ class Parser
         $connector = $this->di->get(RestClient::class);
         $connector->setCookies($this->authorizationCookies);
         $connector->setPost(array(
-            'from'        => $stationFrom->getCode(),
-            'to'          => $stationTo->getCode(),
+            'from'        => $stationFrom,
+            'to'          => $stationTo,
             'train'       => $trainNumber,
             'date'        => $date->format('Y-m-d'),
             'wagon_num'   => $coachNumber,
@@ -311,6 +315,104 @@ class Parser
         }
 
         return !empty($response['data']['places']) ? reset($response['data']['places']) : [];
+    }
+
+    // ---------------------------------------
+
+    public function reserveTicket(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        Entity\Passenger $passenger,
+        Entity\Train\Coach $coach,
+        $seatNumber,
+        \DateTime $date
+    ){
+        try {
+
+            $this->initCookiesAndToken();
+            $this->clearErrorMessages();
+
+            return $this->doReserveTicket(
+                $stationFrom,
+                $stationTo,
+                $passenger,
+                $coach->getTrainNumber(),
+                $coach->getNumber(),
+                $coach->getClass(),
+                $coach->getType(),
+                $seatNumber,
+                $date
+            );
+
+        } catch (\Exception $e) {
+
+            $this->errorMessages[] = $e->getMessage();
+            return [];
+        }
+    }
+
+    /**
+     * @param Entity\Station $stationFrom
+     * @param Entity\Station $stationTo
+     * @param Entity\Passenger $passenger
+     * @param $trainNumber
+     * @param $coachNumber
+     * @param $coachClass
+     * @param $coachType
+     * @param $seatNumber
+     * @param \DateTime $date
+     *
+     * @return array|mixed
+     * @throws Exception\ParsingException
+     */
+    protected function doReserveTicket(
+        Entity\Station $stationFrom,
+        Entity\Station $stationTo,
+        Entity\Passenger $passenger,
+        $trainNumber,
+        $coachNumber,
+        $coachClass,
+        $coachType,
+        $seatNumber,
+        \DateTime $date
+    ){
+        $connector = $this->di->get(RestClient::class);
+        $connector->setCookies($this->authorizationCookies);
+        $connector->setPost(array(
+            'places[0][ord]'         => '0',
+            'places[0][from]'        => $stationFrom->getCode(),
+            'places[0][to]'          => $stationTo->getCode(),
+            'places[0][train]'       => $trainNumber,
+            'places[0][date]'        => $date->format('Y-m-d'),
+            'places[0][wagon_num]'   => $coachNumber,
+            'places[0][place_num]'   => $seatNumber,
+            'places[0][wagon_class]' => $coachClass,
+            'places[0][wagon_type]'  => $coachType,
+
+            'places[0][firstname]'   => $passenger->getFirstName(),
+            'places[0][lastname]'    => $passenger->getLastName(),
+            'places[0][bedding]'     => '1',
+            'places[0][child]'       => (int)$passenger->getIsChild(),
+            'places[0][student]'     => (int)$passenger->getIsStudent(),
+            'places[0][reserve]'     => '0',
+        ));
+
+        $connector->sendRequest($this->getBaseUrl() .'cart/add/');
+        $response = (array)json_decode($connector->getResponseBody(), true);
+
+        if (!empty($response['captcha'])) {
+            throw new Exception\ParsingException('Unable to parse data. Captcha required.');
+        }
+
+        if (!empty($response['error']) && !empty($response['data'])) {
+            throw new Exception\ParsingException("Unable to parse data. {$response['data']}");
+        }
+
+        if (empty($response['cartCount'])) {
+            throw new Exception\ParsingException('Unable to reserve ticket.');
+        }
+
+        return $response;
     }
 
     //###################################
