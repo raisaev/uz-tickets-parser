@@ -12,6 +12,8 @@ php bin/console.php cookie:set "cookie from browser here"
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/516ad748e7df4d709349c41011e5ac78)](https://www.codacy.com/app/raisaev/uz-tickets-parser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=raisaev/uz-tickets-parser&amp;utm_campaign=Badge_Grade)
 
+### parser
+
 - ##### parser:suggest-station
   parser:suggest-station %station-title%
   ```php
@@ -29,5 +31,37 @@ php bin/console.php cookie:set "cookie from browser here"
   
   %coach-code%: [vip | coupe | berth | common | sitting]
   ```php
-  parser:search-coaches --coach-filter=10 --coach-filter=16 2210700 2200001 2019-07-25 738П К
+  parser:search-coaches --coach-filter=10 --coach-filter=16 2210700 2200001 2019-07-25 738П coupe
   ```
+
+- ##### parser:reserve-ticket
+  parser:reserve-ticket %departure-from% %arrive-to% %date% %train-number% %coach-code% %coach-number% %seat-number% %customer-email%
+  
+  %coach-code%: [vip | coupe | berth | common | sitting]
+  %customer-email% : must be created by passenger:add command
+  ```php
+  parser:reserve-ticket 2210700 2200001 2019-07-25 738П coupe 14 032 john.doe@gmail.com
+  ```
+  
+### cookie
+  
+ - ##### cookie:set
+  cookie:set %browser-cookie%
+  
+ - ##### cookie:get
+  cookie:get
+  
+ - ##### cookie:get
+  cookie:get
+
+
+### passenger
+  
+ - ##### passenger:add
+  passenger:add %first-name% %last-name% %email%
+  
+ - ##### passenger:remove
+  passenger:remove %email%
+  
+ - ##### passenger:get
+  passenger:get
