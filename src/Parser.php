@@ -55,6 +55,8 @@ class Parser
         $this->builder = $builder;
         $this->di      = $di;
         $this->cache   = $cache;
+
+        $this->initCookiesAndToken();
     }
 
     // ---------------------------------------
@@ -135,7 +137,6 @@ class Parser
     ){
         try {
 
-            $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
             $trains = $this->searchTrains(
@@ -211,7 +212,6 @@ class Parser
     ){
         try {
 
-            $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
             $coaches = $this->searchCoaches(
@@ -266,8 +266,8 @@ class Parser
 
                 $coach = $this->builder->constructCoach($trainNumber, $coachData);
                 $coach->setFreeSeatsNumbers($this->searchSeats(
-                    $stationFrom->getCode(),
-                    $stationTo->getCode(),
+                    $stationFrom,
+                    $stationTo,
                     $coach->getTrainNumber(),
                     $coach->getNumber(),
                     $coach->getType(),
@@ -329,7 +329,6 @@ class Parser
     ){
         try {
 
-            $this->initCookiesAndToken();
             $this->clearErrorMessages();
 
             return $this->doReserveTicket(
@@ -399,7 +398,10 @@ class Parser
 
         $connector->sendRequest($this->getBaseUrl() .'cart/add/');
         $response = (array)json_decode($connector->getResponseBody(), true);
-
+var_dump(
+    $connector
+);
+die;
         if (!empty($response['captcha'])) {
             throw new Exception\ParsingException('Unable to parse data. Captcha required.');
         }
@@ -445,6 +447,10 @@ class Parser
     {
         if (null === $type) {
             return $this->seatTypesMap[$this->locale];
+        }
+
+        if (!isset($this->seatTypesMap[$this->locale][$type])) {
+            throw new \LogicException("Seat code provided [{$type}] is not exists");
         }
 
         return $this->seatTypesMap[$this->locale][$type];

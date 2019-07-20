@@ -22,13 +22,16 @@ class Repository
     //########################################
 
     /**
-     * @return Passenger[]
+     * @param null|int $id
+     * @return Passenger|Passenger[]
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function get()
+    public function get($id = null)
     {
         $pass = $this->cache->getItem(self::STORAGE_KEY);
-        return $pass->isHit() ? $pass->get() : [];
+        $data = $pass->isHit() ? $pass->get() : [];
+
+        return $id === null ? $data : (isset($data[$id]) ? $data[$id] : null);
     }
 
     /**

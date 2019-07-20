@@ -27,6 +27,7 @@ $commandLoader = new ContainerCommandLoader($containerBuilder, array(
     Command\Parser\SuggestStation::getDefaultName() => Command\Parser\SuggestStation::class,
     Command\Parser\SearchTrains::getDefaultName()   => Command\Parser\SearchTrains::class,
     Command\Parser\SearchCoaches::getDefaultName()  => Command\Parser\SearchCoaches::class,
+    Command\Parser\ReserveTicket::getDefaultName()  => Command\Parser\ReserveTicket::class,
 ));
 
 $application = new Application('Booking.uz.gov.ua Parser Console');
